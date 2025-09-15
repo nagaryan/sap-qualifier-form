@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ePLDT Elevate Your Tech Session Attendee Qualifier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #00677f;
+            --primary-light: #00d1de;
+            --accent-pink: #df1995;
+            --accent-red: #ed5453;
+            --neutral-white: #ffffff;
+            --neutral-black: #000000;
+            --neutral-dark-gray: #1f2937;
+            --neutral-gray: #6b7280;
+            --neutral-light-gray: #f3f4f6;
+            --neutral-border: #d1d5db;
+            --bg-light-start: #e5e7eb;
+            --bg-light-end: #d1d5db;
+        }
+
+        .dark {
+            --primary-dark: #00d1de;
+            --primary-light: #00677f;
+            --accent-pink: #f472b6;
+            --accent-red: #f87171;
+            --neutral-white: #111827;
+            --neutral-black: #ffffff;
+            --neutral-dark-gray: #f9fafb;
+            --neutral-gray: #9ca3af;
+            --neutral-light-gray: #1f2937;
+            --neutral-border: #4b5563;
+            --bg-light-start: #1f2937;
+            --bg-light-end: #111827;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-light-start), var(--bg-light-end));
+            color: var(--neutral-dark-gray);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .main-container {
+             background-color: var(--neutral-white);
+             transition: background-color 0.3s ease;
+        }
+
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-dark);
+            color: var(--neutral-black);
+            border-radius: 0.5rem;
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+            color: var(--neutral-dark-gray);
+        }
+        
+        .btn-cta {
+            background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary-light) 100%);
+            color: var(--neutral-white);
+            border-radius: 0.5rem;
+        }
+        .btn-cta:disabled {
+            background: var(--neutral-gray);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-provider {
+            background-color: var(--neutral-white);
+            color: var(--neutral-dark-gray);
+            transition: all 0.2s ease-in-out;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+        }
+        .dark .btn-provider {
+            background-color: #374151;
+            box-shadow: none;
+        }
+        .btn-provider.selected {
+            background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary-light) 100%);
+            color: var(--neutral-white);
+            box-shadow: none;
+        }
+         .btn-provider:disabled {
+            background-color: var(--neutral-light-gray);
+            color: var(--neutral-gray);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .sub-option-container {
+             background-color: var(--neutral-light-gray);
+             padding: 1rem;
+             border: 1px solid var(--neutral-border);
+             border-top: none;
+        }
+
+        .rank-number { color: var(--accent-pink); }
+        input[type="checkbox"]:checked {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        
+        /* Drag and Drop Enhancements */
+        #draggable-list > div {
+             background-color: var(--neutral-light-gray);
+             border-radius: 0.5rem;
+             transition: transform 0.2s ease-in-out; /* Smooth movement for other items */
+        }
+        .dark #draggable-list > div {
+             background-color: #374151;
+        }
+        .dragging {
+            opacity: 1; /* Make it solid */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1); /* Add a lift effect */
+            transform: scale(1.02); /* Slightly larger */
+            background: var(--neutral-white);
+        }
+        .dark .dragging {
+            background: #4b5563;
+        }
+        .q-hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-3xl mx-auto rounded-xl shadow-2xl overflow-hidden main-container relative">
+         <!-- Dark Mode Toggle -->
+        <div class="absolute top-4 right-4 z-10">
+            <button id="theme-toggle" class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark" style="background-color: var(--neutral-light-gray); color: var(--neutral-dark-gray);">
+                <svg id="theme-toggle-dark-icon" class="w-6 h-6 q-hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                <svg id="theme-toggle-light-icon" class="w-6 h-6 q-hidden" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.106a.75.75 0 010 1.06l-1.591 1.59a.75.75 0 11-1.06-1.06l1.59-1.591a.75.75 0 011.06 0zm-11.457 9.589a.75.75 0 010 1.06l-1.59 1.591a.75.75 0 11-1.061-1.06l1.591-1.59a.75.75 0 011.06 0zm11.457-1.06a.75.75 0 01-1.06 0l-1.59-1.591a.75.75 0 111.06-1.06l1.591 1.59a.75.75 0 010 1.061zM5.106 6.106a.75.75 0 011.06 0l1.591 1.59a.75.75 0 01-1.06 1.06l-1.59-1.591a.75.75 0 010-1.06zM12 18.75a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0v-2.25a.75.75 0 01.75-.75zM3.75 12a.75.75 0 01.75-.75h2.25a.75.75 0 010 1.5H4.5a.75.75 0 01-.75-.75zM17.25 12a.75.75 0 01.75-.75h2.25a.75.75 0 010 1.5h-2.25a.75.75 0 01-.75-.75z"></path></svg>
+            </button>
+        </div>
+
+        <div class="p-8">
+            <header class="text-center mb-8">
+                 <div id="header-content" class="p-6 rounded-lg -m-8 mb-8 border-b-4" style="border-color: var(--primary-light);">
+                    <h1 class="text-3xl font-bold" style="color: var(--primary-dark);">
+                        ePLDT Elevate Your Tech Session<br>
+                        <span class="text-2xl font-semibold">Attendee Qualifier</span>
+                    </h1>
+                 </div>
+                <p id="intro-text" style="color: var(--neutral-gray);" class="mt-2 px-4 q-hidden">Greetings! To ensure our exclusive workshop is tailored to your business needs, please answer the following questions.</p>
+            </header>
+
+            <!-- Quiz Section -->
+            <div id="quiz-section">
+                <!-- Question Containers -->
+                <div id="question-container-q0" class="question-container fade-in">
+                    <p class="text-lg font-semibold mb-4 text-center">To begin, please enter your company name</p>
+                    <input type="text" id="companyNameInput" class="w-full max-w-sm mx-auto p-3 border rounded-lg block" placeholder="Your Company Name" style="background-color: var(--neutral-white); border-color: var(--neutral-border); color: var(--neutral-dark-gray);">
+                    <button id="start-btn" class="mt-4 w-full max-w-sm mx-auto font-semibold py-3 px-4 shadow btn-cta block" disabled>Start</button>
+                </div>
+
+                <div id="question-container-q1" class="question-container q-hidden fade-in">
+                     <p class="question-title text-lg font-semibold mb-4 text-center"></p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <button data-answer="b1_or_ecc" class="w-full font-semibold py-3 px-4 shadow btn-primary">SAP Business One (B1) or ECC</button>
+                        <button data-answer="s4hana" class="w-full font-semibold py-3 px-4 shadow btn-primary">SAP S/4HANA</button>
+                    </div>
+                </div>
+
+                <div id="question-container-q3" class="question-container q-hidden fade-in">
+                     <p class="question-title text-lg font-semibold mb-4 text-center"></p>
+                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <button data-answer="on_premise" class="w-full font-semibold py-3 px-4 shadow btn-primary">On-Premise</button>
+                        <button data-answer="on_cloud" class="w-full font-semibold py-3 px-4 shadow btn-primary">Already on a Public Cloud</button>
+                    </div>
+                </div>
+
+                <div id="question-container-q4" class="question-container q-hidden fade-in">
+                    <p class="question-title text-lg font-semibold mb-2 text-center"></p>
+                    <p class="text-sm mb-4 text-center" style="color: var(--neutral-gray);">(Drag to reorder)</p>
+                     <div id="draggable-list" class="space-y-3 mb-6">
+                        <div class="p-4 border flex items-center cursor-move shadow-sm" draggable="true" style="border-color: var(--neutral-border);"><span class="mr-4 w-4 text-center rank-number font-bold">1</span><span>High operational costs</span></div>
+                        <div class="p-4 border flex items-center cursor-move shadow-sm" draggable="true" style="border-color: var(--neutral-border);"><span class="mr-4 w-4 text-center rank-number font-bold">2</span><span>System performance & reliability</span></div>
+                        <div class="p-4 border flex items-center cursor-move shadow-sm" draggable="true" style="border-color: var(--neutral-border);"><span class="mr-4 w-4 text-center rank-number font-bold">3</span><span>Security and compliance concerns</span></div>
+                        <div class="p-4 border flex items-center cursor-move shadow-sm" draggable="true" style="border-color: var(--neutral-border);"><span class="mr-4 w-4 text-center rank-number font-bold">4</span><span>Preparing for future upgrades</span></div>
+                    </div>
+                    <button data-answer="next" class="w-full font-semibold py-3 px-4 shadow btn-cta">Continue</button>
+                </div>
+
+                <div id="question-container-q5" class="question-container q-hidden fade-in">
+                    <p class="question-title text-lg font-semibold mb-4 text-center"></p>
+                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                         <button data-answer="provider_aws" class="w-full font-semibold py-3 px-4 shadow btn-primary">Amazon Web Services (AWS)</button>
+                         <button data-answer="provider_azure" class="w-full font-semibold py-3 px-4 shadow btn-primary">Microsoft Azure</button>
+                         <button data-answer="provider_gcp" class="w-full font-semibold py-3 px-4 shadow btn-primary">Google Cloud Platform (GCP)</button>
+                         <button data-answer="provider_other" class="w-full font-semibold py-3 px-4 shadow btn-primary">Other</button>
+                     </div>
+                </div>
+                
+                <div id="question-container-q6" class="question-container q-hidden fade-in">
+                    <p class="question-title text-lg font-semibold text-center"></p>
+                    <p class="text-sm mb-4 text-center" style="color: var(--neutral-gray);">(Select all that apply)</p>
+                    <div id="provider-buttons" class="space-y-2 w-full sm:w-[70%] mx-auto">
+                        <button class="w-full font-semibold btn-provider" data-value="No">No, we are not on any public cloud</button>
+                        <button class="w-full font-semibold btn-provider" data-value="AWS">Amazon Web Services (AWS)</button>
+                        <button class="w-full font-semibold btn-provider" data-value="Azure">Microsoft Azure</button>
+                        <button class="w-full font-semibold btn-provider" data-value="GCP">Google Cloud Platform (GCP)</button>
+                        <button class="w-full font-semibold btn-provider" data-value="Alibaba">Alibaba Cloud</button>
+                        <button class="w-full font-semibold btn-provider" data-value="Huawei">Huawei Cloud</button>
+                        <input type="text" id="otherProviderInput" class="w-full p-4 border-0 shadow-md btn-provider" placeholder="Other, please specify" style="background-color: var(--neutral-white); color: var(--neutral-dark-gray);">
+                    </div>
+                    <div class="w-full sm:w-[70%] mx-auto">
+                         <button id="provider-continue-btn" class="mt-6 w-full font-semibold py-3 px-4 shadow btn-cta" disabled>Continue</button>
+                    </div>
+                </div>
+                
+                <div id="question-container-q8" class="question-container q-hidden fade-in">
+                    <p class="question-title text-lg font-semibold text-center"></p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                        <button data-answer="migration_yes" class="w-full font-semibold py-3 px-4 shadow btn-primary">Yes</button>
+                        <button data-answer="migration_no" class="w-full font-semibold py-3 px-4 shadow btn-primary">No</button>
+                    </div>
+                </div>
+
+                <div id="question-container-q9" class="question-container q-hidden fade-in">
+                    <p class="question-title text-lg font-semibold text-center"></p>
+                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                        <button data-answer="timeline_3m" class="w-full font-semibold py-3 px-4 shadow btn-primary">Next 3 Months</button>
+                        <button data-answer="timeline_6m" class="w-full font-semibold py-3 px-4 shadow btn-primary">Next 6 Months</button>
+                        <button data-answer="timeline_12m" class="w-full font-semibold py-3 px-4 shadow btn-primary">Next 12 Months</button>
+                    </div>
+                </div>
+
+                <div id="question-container-q7" class="question-container q-hidden fade-in">
+                    <p id="workload-title" class="question-title text-lg font-semibold text-center"></p>
+                    <p class="text-sm mb-4 text-center" style="color: var(--neutral-gray);">(Select all that apply)</p>
+                    <div id="workload-buttons" class="space-y-2 w-full sm:w-[70%] mx-auto">
+                        <!-- Workload buttons and sub-options are dynamically generated in JS -->
+                    </div>
+                     <div class="w-full sm:w-[70%] mx-auto">
+                        <button id="workload-continue-btn" class="mt-6 w-full font-semibold py-3 px-4 shadow btn-cta" disabled>Continue</button>
+                    </div>
+                </div>
+
+                <div class="mt-8 text-left">
+                    <button id="back-button" class="q-hidden inline-flex items-center justify-center w-7 h-7 rounded-full btn-cta">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Result Section -->
+            <div id="result-section" class="q-hidden text-center fade-in">
+                 <div id="qualified-result">
+                    <div id="qualified-on-premise" class="q-hidden">
+                        <svg class="w-16 h-16 mx-auto" style="color: var(--primary-dark);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <h2 class="text-2xl font-bold mt-4">Thank you for answering our questions. This workshop is ideal for you.</h2>
+                        <p class="mt-2" style="color: var(--neutral-gray);">Since your SAP system is on-premise, this workshop is a perfect fit. We will dive deep into migration strategies, modernizing your infrastructure, and addressing key challenges like cost, performance, and security.</p>
+                        <p class="mt-4" style="color: var(--neutral-gray);">We have secured two workshop seats for <span class="font-bold company-name-placeholder">your company</span>. Please register below to claim your seats.</p>
+                        <a href="https://forms.office.com/r/MFCqwCQuUe" target="_blank"><button class="mt-6 font-bold py-3 px-8 rounded-lg text-lg shadow-lg btn-cta">Register for the Workshop</button></a>
+                        <div class="mt-8 text-center">
+                           <button class="reset-quiz-btn text-sm font-light hover:underline">Restart Form</button>
+                        </div>
+                    </div>
+                    <div id="qualified-on-cloud" class="q-hidden">
+                        <svg class="w-16 h-16 mx-auto" style="color: var(--primary-dark);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <h2 class="text-2xl font-bold mt-4">Thank you. This workshop is highly relevant for you.</h2>
+                         <p class="mt-2" style="color: var(--neutral-gray);">As you're already on the cloud, this workshop is a perfect opportunity to explore what's next. We'll discuss advanced strategies and introduce compelling platform alternatives designed to give your organization a competitive edge, particularly in areas of cost-efficiency, performance, and local compliance.</p>
+                         <p class="mt-4" style="color: var(--neutral-gray);">We have secured two workshop seats for <span class="font-bold company-name-placeholder">your company</span>. Please register below to claim your seats.</p>
+                        <a href="https://forms.office.com/r/MFCqwCQuUe" target="_blank"><button class="mt-6 font-bold py-3 px-8 rounded-lg text-lg shadow-lg btn-cta">Register for the Workshop</button></a>
+                        <div class="mt-8 text-center">
+                           <button class="reset-quiz-btn text-sm font-light hover:underline">Restart Form</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="unqualified-result" class="q-hidden">
+                     <svg class="w-16 h-16 mx-auto" style="color: var(--accent-red);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h2 class="text-2xl font-bold mt-4">Thank you for your interest!</h2>
+                    <p class="mt-2" style="color: var(--neutral-gray);">It's great you're on S/4HANA! This workshop is tailored for customers on earlier versions.</p>
+                    <p class="mt-2" style="color: var(--neutral-gray);">While this session may not be the best fit, we will keep you informed of future events covering topics like Cloud, Security, and Data & AI.</p>
+                    <div class="mt-6 p-6 text-left" style="background-color: var(--neutral-light-gray); border-left: 4px solid var(--primary-dark);">
+                        <h3 class="font-bold text-lg">Accelerating your digital tx journey</h3>
+                        <p class="mt-2">Beyond your ERP, many organizations are looking to enhance other business-critical applications.</p>
+                        <p class="mt-3 font-semibold">Please select any initiatives you are currently exploring:</p>
+                         <div id="interests-section" class="mt-2 space-y-2">
+                            <label class="flex items-start p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-200"><input type="checkbox" name="interest" value="finops" class="h-5 w-5 rounded mt-1 flex-shrink-0"><span class="ml-3"><strong>Optimize your cloud spend</strong> (FinOps)?</span></label>
+                            <label class="flex items-start p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-200"><input type="checkbox" name="interest" value="ops_excellence" class="h-5 w-5 rounded mt-1 flex-shrink-0"><span class="ml-3"><strong>Enhance operational excellence</strong> (performance, security)?</span></label>
+                            <label class="flex items-start p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-200"><input type="checkbox" name="interest" value="modernization" class="h-5 w-5 rounded mt-1 flex-shrink-0"><span class="ml-3"><strong>Modernize your wider application portfolio</strong>?</span></label>
+                        </div>
+                        <div class="mt-6 flex flex-col sm:flex-row gap-4"><button id="capture-contact-btn" class="w-full sm:w-auto flex-1 font-semibold py-2 px-4 shadow btn-cta">Contact Relationship Manager</button><button id="capture-no-thanks-btn" class="w-full sm:w-auto flex-1 font-semibold py-2 px-4 shadow bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">Not Right Now</button></div>
+                    </div>
+                    <div class="mt-8 relative h-8">
+                        <button id="unqualified-back-btn" class="absolute left-0 inline-flex items-center justify-center w-7 h-7 rounded-full btn-cta">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
+                        <div class="text-center">
+                            <button class="reset-quiz-btn text-sm font-light hover:underline">Restart Form</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="final-thank-you" class="q-hidden">
+                    <svg class="w-16 h-16 mx-auto" style="color: var(--primary-dark);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h2 class="text-2xl font-bold mt-4">Thank you, <span class="company-name-placeholder"></span>!</h2>
+                    <p id="thank-you-default" class="mt-2" style="color: var(--neutral-gray);">We appreciate your time and feedback. Have a great day.</p>
+                    <p id="thank-you-contact-rm" class="q-hidden mt-2" style="color: var(--neutral-gray);">We will inform your Relationship Manager to reach out to you shortly. We look forward to seeing you at future workshops!</p>
+                     <div class="mt-8 text-center">
+                        <button class="reset-quiz-btn text-sm font-light hover:underline">Restart Form</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Configuration ---
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0BWDCQhcF97ScCneBY8XzqhPR61LvFT9Ggzvo99549OKlAPc9t8QJG10WBvmMt8S9aA/exec';
+        const QUESTIONS_CONFIG = {
+            'q1': "Which SAP ERP system is your company currently using?",
+            'q3': "Where is your SAP currently deployed?",
+            'q4': "Please rank your top business challenges in managing your SAP.",
+            'q5': "Which cloud provider are you currently using?",
+            'q6': "Are you using any public cloud today?",
+            'q8': "Are you planning any cloud migration or adoption in the near future?",
+            'q9': "What is your estimated timeline?",
+            'q7': "What workloads are currently running on your cloud?"
+        };
+        const WORKLOADS_CONFIG = [
+            { id: 'websites', category: 'Websites & Web Apps', subOptions: ['Customer-facing sites', 'Portals', 'E-commerce platforms', 'Internal applications'] },
+            { id: 'analytics', category: 'Data Analytics & Big Data', subOptions: ['Data Warehouses', 'Data Lakes', 'Business Intelligence (BI)', 'Data Processing (ETL)'] },
+            { id: 'ai', category: 'AI & Machine Learning', subOptions: ['Predictive Modeling', 'Natural Language Processing (NLP)', 'Chatbots', 'Computer Vision'] },
+            { id: 'devops', category: 'DevOps & CI/CD', subOptions: ['Code Repositories (e.g., Git)', 'Automated Pipelines (CI/CD)', 'Container Orchestration (e.g., Kubernetes)'] },
+            { id: 'storage', category: 'Storage, Backup & Disaster Recovery', subOptions: ['File Storage & Archiving', 'Data Backup Solutions', 'Disaster Recovery (DR) Site'] }
+        ];
+
+        // --- State ---
+        let userAnswers = {};
+        let history = ['q0'];
+        let questionNumber = 1;
+
+        // --- DOM Elements ---
+        const dom = {
+            themeToggle: document.getElementById('theme-toggle'),
+            lightIcon: document.getElementById('theme-toggle-light-icon'),
+            darkIcon: document.getElementById('theme-toggle-dark-icon'),
+            backButton: document.getElementById('back-button'),
+            unqualifiedBackButton: document.getElementById('unqualified-back-btn'),
+            questionContainers: document.querySelectorAll('.question-container'),
+            headerContent: document.getElementById('header-content'),
+            introText: document.getElementById('intro-text'),
+            quizSection: document.getElementById('quiz-section'),
+            resultSection: document.getElementById('result-section'),
+            qualifiedResult: document.getElementById('qualified-result'),
+            unqualifiedResult: document.getElementById('unqualified-result'),
+            finalThankYou: document.getElementById('final-thank-you'),
+            thankYouDefault: document.getElementById('thank-you-default'),
+            thankYouContactRm: document.getElementById('thank-you-contact-rm'),
+            workloadTitle: document.getElementById('workload-title'),
+            workloadButtonsContainer: document.getElementById('workload-buttons'),
+            providerContinueBtn: document.getElementById('provider-continue-btn'),
+            workloadContinueBtn: document.getElementById('workload-continue-btn'),
+            startBtn: document.getElementById('start-btn'),
+            companyNameInput: document.getElementById('companyNameInput'),
+            draggableList: document.getElementById('draggable-list'),
+            interestsSection: document.getElementById('interests-section')
+        };
+        
+        // --- Functions ---
+        const gatherAndSaveData = (action) => {
+            const finalQuizData = {
+                timestamp: new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' }),
+                companyName: userAnswers.companyName || '',
+                qualified: userAnswers.qualified || '',
+                sapVersion: userAnswers.sapVersion || '',
+                hosting: userAnswers.hosting || '',
+                rankedChallenges: userAnswers.rankedChallenges || '',
+                cloudProvider: userAnswers.cloudProvider || '',
+                s4_cloudProviders: userAnswers.s4_cloudProviders || '',
+                s4_otherProvider: userAnswers.s4_otherProvider || '',
+                s4_migrationPlans: userAnswers.s4_migrationPlans || '',
+                s4_migrationTimeline: userAnswers.s4_migrationTimeline || '',
+                s4_workloadDetails: userAnswers.s4_workloadDetails || '',
+                s4hanaInterests: Array.from(dom.interestsSection.querySelectorAll('input:checked')).map(cb => cb.value).join('; ') || '',
+                actionTaken: action || ''
+            };
+
+            const formData = new FormData();
+            for (const key in finalQuizData) { formData.append(key, finalQuizData[key]); }
+            
+            fetch(SCRIPT_URL, { method: 'POST', body: formData})
+                .then(res => res.json()).then(data => console.log(data.result === 'success' ? 'Success!' : 'Error:', data))
+                .catch(error => console.error('Fetch Error!', error));
+        };
+
+        const updateQuestionTitle = (qId) => {
+            const container = document.getElementById(`question-container-${qId}`);
+            if (!container) return;
+            const titleEl = container.querySelector('.question-title');
+            if (titleEl && QUESTIONS_CONFIG[qId]) {
+                 titleEl.textContent = `${questionNumber}. ${QUESTIONS_CONFIG[qId]}`;
+            }
+        };
+
+        const showQuestion = (id, forward = true) => {
+            if (forward) {
+                if(history[history.length - 1] !== id) history.push(id);
+                questionNumber++;
+            }
+            dom.questionContainers.forEach(q => q.classList.add('q-hidden'));
+            const container = document.getElementById(`question-container-${id}`);
+            if (container) {
+                container.classList.remove('q-hidden');
+                updateQuestionTitle(id);
+            }
+            dom.backButton.classList.toggle('q-hidden', history.length <= 1);
+        };
+        
+        const goBack = () => {
+            if (history.length > 1) { 
+                if (!dom.resultSection.classList.contains('q-hidden')) {
+                    dom.resultSection.classList.add('q-hidden');
+                    dom.quizSection.classList.remove('q-hidden');
+                    dom.headerContent.classList.remove('q-hidden');
+                    dom.introText.classList.remove('q-hidden');
+                }
+                history.pop();
+                questionNumber--;
+                showQuestion(history[history.length - 1], false); 
+            }
+        };
+
+        const startQuiz = () => {
+            userAnswers = { companyName: dom.companyNameInput.value.trim() };
+            if (userAnswers.companyName) {
+                dom.introText.classList.remove('q-hidden');
+                showQuestion('q1');
+            }
+        };
+
+        const handleAnswer = (answer) => {
+            const actions = {
+                'b1_or_ecc': () => { userAnswers.sapVersion = 'B1 or ECC'; showQuestion('q3'); },
+                's4hana': () => { userAnswers.sapVersion = 'S/4HANA'; showQuestion('q6'); },
+                'on_premise': () => { userAnswers.hosting = 'On-Premise'; showQuestion('q4'); },
+                'on_cloud': () => { userAnswers.hosting = 'Cloud'; showQuestion('q4'); },
+                'next': () => {
+                    userAnswers.rankedChallenges = Array.from(dom.draggableList.querySelectorAll('span:last-child')).map(item => item.textContent).join('; ');
+                    userAnswers.hosting === 'On-Premise' ? showResult('qualified_premise') : showQuestion('q5');
+                },
+                'provider_aws': () => { userAnswers.cloudProvider = 'AWS'; showResult('qualified_cloud'); },
+                'provider_azure': () => { userAnswers.cloudProvider = 'Azure'; showResult('qualified_cloud'); },
+                'provider_gcp': () => { userAnswers.cloudProvider = 'GCP'; showResult('qualified_cloud'); },
+                'provider_other': () => { userAnswers.cloudProvider = 'Other'; showResult('qualified_cloud'); },
+                'migration_yes': () => { userAnswers.s4_migrationPlans = 'Yes'; showQuestion('q9'); },
+                'migration_no': () => { userAnswers.s4_migrationPlans = 'No'; showResult('unqualified'); },
+                'timeline_3m': () => { userAnswers.s4_migrationTimeline = '3 Months'; dom.workloadTitle.textContent = `${questionNumber + 1}. Which workload/s are you planning to migrate or use cloud for?`; showQuestion('q7'); },
+                'timeline_6m': () => { userAnswers.s4_migrationTimeline = '6 Months'; dom.workloadTitle.textContent = `${questionNumber + 1}. Which workload/s are you planning to migrate or use cloud for?`; showQuestion('q7'); },
+                'timeline_12m': () => { userAnswers.s4_migrationTimeline = '12 Months'; dom.workloadTitle.textContent = `${questionNumber + 1}. Which workload/s are you planning to migrate or use cloud for?`; showQuestion('q7'); }
+            };
+            if (actions[answer]) actions[answer]();
+        };
+
+        const handleProviderSelection = () => {
+            userAnswers.s4_cloudProviders = Array.from(document.querySelectorAll('#provider-buttons .selected')).map(btn => btn.dataset.value).join('; ');
+            const otherInput = document.getElementById('otherProviderInput');
+            userAnswers.s4_otherProvider = (otherInput.value.trim() !== '' && !otherInput.disabled) ? otherInput.value.trim() : '';
+            if (userAnswers.s4_cloudProviders === 'No') {
+                showQuestion('q8');
+            } else {
+                dom.workloadTitle.textContent = `${questionNumber + 1}. What workloads are currently running on your cloud?`;
+                showQuestion('q7');
+            }
+        };
+
+        const handleWorkloadSelection = () => {
+            const selections = [];
+            document.querySelectorAll('#workload-buttons > div').forEach(div => {
+                const btn = div.querySelector('.btn-provider.selected');
+                if (!btn) return;
+                const category = btn.dataset.value;
+                const subOptions = Array.from(div.querySelectorAll('.sub-option-container input:checked')).map(cb => cb.parentElement.textContent.trim());
+                selections.push(subOptions.length > 0 ? `${category} (${subOptions.join(', ')})` : category);
+            });
+            const otherWorkload = document.getElementById('otherWorkloadInput').value.trim();
+            if (otherWorkload) selections.push(`Other (${otherWorkload})`);
+            userAnswers.s4_workloadDetails = selections.join('; ');
+            showResult('unqualified');
+        };
+
+        const showResult = (type) => {
+            dom.quizSection.classList.add('q-hidden');
+            dom.resultSection.classList.remove('q-hidden');
+            dom.headerContent.classList.add('q-hidden');
+            dom.introText.classList.add('q-hidden');
+            [...dom.resultSection.children].forEach(el => el.classList.add('q-hidden'));
+
+            document.querySelectorAll('.company-name-placeholder').forEach(el => {
+                el.textContent = userAnswers.companyName || 'your company';
+            });
+
+            if (type.startsWith('qualified')) {
+                userAnswers.qualified = 'Yes';
+                dom.qualifiedResult.classList.remove('q-hidden');
+                dom.qualifiedResult.querySelector(type === 'qualified_premise' ? '#qualified-on-premise' : '#qualified-on-cloud').classList.remove('q-hidden');
+                gatherAndSaveData('Shown Registration');
+            } else if (type === 'unqualified') {
+                userAnswers.qualified = 'No (S/4HANA)';
+                dom.unqualifiedResult.classList.remove('q-hidden');
+            }
+        };
+        
+        const captureInterests = (action) => {
+            dom.unqualifiedResult.classList.add('q-hidden');
+            dom.finalThankYou.classList.remove('q-hidden');
+            
+            dom.thankYouDefault.classList.toggle('q-hidden', action === 'contact_rm');
+            dom.thankYouContactRm.classList.toggle('q-hidden', action !== 'contact_rm');
+
+            document.querySelectorAll('.company-name-placeholder').forEach(el => {
+                el.textContent = userAnswers.companyName || '';
+            });
+            gatherAndSaveData(action);
+        };
+
+        const resetQuiz = () => {
+            userAnswers = {}; 
+            history = ['q0'];
+            questionNumber = 1;
+            dom.resultSection.classList.add('q-hidden'); dom.finalThankYou.classList.add('q-hidden');
+            dom.headerContent.classList.remove('q-hidden'); 
+            dom.introText.classList.add('q-hidden');
+            dom.quizSection.classList.remove('q-hidden');
+            document.querySelectorAll('input[type="text"]').forEach(i => i.value = '');
+            dom.startBtn.disabled = true;
+            document.querySelectorAll('.btn-provider.selected, .btn-primary.selected').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('.sub-option-container').forEach(c => c.classList.add('q-hidden'));
+            document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+            showQuestion('q0', false);
+        };
+
+        // --- Initial Setup ---
+        const initializeUI = () => {
+            const isDarkMode = localStorage.getItem('theme') === 'dark';
+            document.documentElement.classList.toggle('dark', isDarkMode);
+            dom.lightIcon.classList.toggle('q-hidden', !isDarkMode);
+            dom.darkIcon.classList.toggle('q-hidden', isDarkMode);
+            
+            dom.workloadButtonsContainer.innerHTML = WORKLOADS_CONFIG.map(w => `
+                <div>
+                    <button class="w-full font-semibold btn-provider" data-value="${w.category}">
+                        <div>${w.category}</div>
+                    </button>
+                    <div class="q-hidden mt-2 pl-4 sub-option-container">
+                        <div class="space-y-2">${w.subOptions.map(so => `<label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 mr-2">${so}</label>`).join('')}</div>
+                    </div>
+                </div>`).join('') + `
+                 <input type="text" id="otherWorkloadInput" class="w-full p-4 border-0 shadow-md btn-provider" placeholder="Other, please specify" style="background-color: var(--neutral-white); color: var(--neutral-dark-gray);">`;
+        };
+        
+        const setupEventListeners = () => {
+            dom.themeToggle.addEventListener('click', () => {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                dom.lightIcon.classList.toggle('q-hidden', !isDark);
+                dom.darkIcon.classList.toggle('q-hidden', isDark);
+            });
+
+            dom.companyNameInput.addEventListener('input', () => {
+                dom.startBtn.disabled = dom.companyNameInput.value.trim() === '';
+            });
+            
+            dom.startBtn.addEventListener('click', startQuiz);
+            dom.backButton.addEventListener('click', goBack);
+            dom.unqualifiedBackButton.addEventListener('click', goBack);
+            document.querySelectorAll('.reset-quiz-btn').forEach(btn => btn.addEventListener('click', resetQuiz));
+            
+            document.getElementById('capture-contact-btn').addEventListener('click', () => captureInterests('contact_rm'));
+            document.getElementById('capture-no-thanks-btn').addEventListener('click', () => captureInterests('no_thanks'));
+
+            dom.quizSection.addEventListener('click', (e) => {
+                const answer = e.target.dataset.answer;
+                if (answer) handleAnswer(answer);
+            });
+
+            dom.providerContinueBtn.addEventListener('click', handleProviderSelection);
+            dom.workloadContinueBtn.addEventListener('click', handleWorkloadSelection);
+
+            const setupMultiSelect = (containerId, continueBtn) => {
+                const container = document.getElementById(containerId);
+                const otherInput = container.querySelector('input[type="text"]');
+                
+                const checkState = () => {
+                     const anySelected = container.querySelector('.btn-provider.selected');
+                     const otherHasValue = otherInput && otherInput.value.trim() !== '';
+                     continueBtn.disabled = !anySelected && !otherHasValue;
+                };
+
+                container.addEventListener('click', e => {
+                    const button = e.target.closest('.btn-provider');
+                    if (e.target.closest('.sub-option-container') || e.target.tagName === 'INPUT') return; 
+                    
+                    if (button) {
+                        const isNoButton = button.dataset.value === 'No';
+                        if (isNoButton) {
+                            const isSelected = button.classList.toggle('selected');
+                            container.querySelectorAll('.btn-provider').forEach(btn => {
+                                if (btn !== button) btn.classList.remove('selected');
+                            });
+                            if (otherInput) otherInput.value = '';
+                        } else {
+                            const noButton = container.querySelector('[data-value="No"]');
+                            if (noButton) noButton.classList.remove('selected');
+                            button.classList.toggle('selected');
+                        }
+
+                         // Handle workload sub-options visibility
+                        if (containerId === 'workload-buttons') {
+                             const detailsDiv = button.nextElementSibling;
+                             if (detailsDiv && detailsDiv.classList.contains('sub-option-container')) {
+                                 detailsDiv.classList.toggle('q-hidden', !button.classList.contains('selected'));
+                                 if (!button.classList.contains('selected')) detailsDiv.querySelectorAll('input:checked').forEach(cb => cb.checked = false);
+                             }
+                        }
+                    }
+                    checkState();
+                });
+                if(otherInput) otherInput.addEventListener('input', checkState);
+            };
+
+            setupMultiSelect('provider-buttons', dom.providerContinueBtn);
+            setupMultiSelect('workload-buttons', dom.workloadContinueBtn);
+        };
+        
+        const setupDragAndDrop = () => {
+            let draggingElement = null;
+            const list = dom.draggableList;
+            if (!list) return;
+
+            const updateRanks = () => list.querySelectorAll('[draggable="true"]').forEach((item, i) => item.querySelector('.rank-number').textContent = i + 1);
+
+            list.addEventListener('dragstart', e => {
+                draggingElement = e.target;
+                e.target.classList.add('dragging');
+            });
+            list.addEventListener('dragend', e => {
+                if (draggingElement) {
+                    draggingElement.classList.remove('dragging');
+                    draggingElement = null;
+                    updateRanks();
+                }
+            });
+            list.addEventListener('dragover', e => {
+                e.preventDefault();
+                if (!draggingElement) return;
+                const afterElement = [...list.querySelectorAll('[draggable="true"]:not(.dragging)')].reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = e.clientY - box.top - box.height / 2;
+                    return (offset < 0 && offset > closest.offset) ? { offset: offset, element: child } : closest;
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+
+                if (afterElement == null) {
+                    list.appendChild(draggingElement);
+                } else {
+                    list.insertBefore(draggingElement, afterElement);
+                }
+            });
+        };
+
+        // --- Execution ---
+        initializeUI();
+        setupEventListeners();
+        setupDragAndDrop();
+    });
+    </script>
+</body>
+</html>
+
+
