@@ -166,6 +166,15 @@
                     <button id="start-btn" class="mt-4 w-full max-w-sm mx-auto font-semibold py-3 px-4 shadow btn-cta block" disabled>Start</button>
                 </div>
 
+                <!-- NEW: Uses SAP Question -->
+                <div id="question-container-q-uses-sap" class="question-container q-hidden fade-in">
+                     <p class="question-title text-lg font-semibold mb-4 text-center"></p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <button data-answer="uses_sap_yes" class="w-full font-semibold py-3 px-4 shadow btn-primary">Yes</button>
+                        <button data-answer="uses_sap_no" class="w-full font-semibold py-3 px-4 shadow btn-primary">No</button>
+                    </div>
+                </div>
+
                 <div id="question-container-q1" class="question-container q-hidden fade-in">
                      <p class="question-title text-lg font-semibold mb-4 text-center"></p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -173,6 +182,24 @@
                         <button data-answer="s4hana" class="w-full font-semibold py-3 px-4 shadow btn-primary">SAP S/4HANA</button>
                     </div>
                 </div>
+
+                <!-- NEW: S/4HANA Pre-Qualifier -->
+                <div id="question-container-s4hana-prequal" class="question-container q-hidden fade-in">
+                    <div class="text-center">
+                        <svg class="w-16 h-16 mx-auto" style="color: var(--accent-red);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <h2 class="text-2xl font-bold mt-4">Thank you for your interest!</h2>
+                        <p class="mt-2" style="color: var(--neutral-gray);">It's great you're on S/4HANA! This workshop is tailored for customers on earlier versions.</p>
+                        <p class="mt-2" style="color: var(--neutral-gray);">While this session may not be the best fit, we will keep you informed of future events covering topics like Cloud, Security, and Data & AI.</p>
+                    </div>
+                    <div class="mt-6 p-6 text-left rounded-lg" style="background-color: var(--neutral-light-gray); border-left: 4px solid var(--primary-dark);">
+                        <p class="font-semibold">To help us craft future workshops tailored to your needs, would you have a few moments to answer some additional questions?</p>
+                        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <button data-answer="s4_continue_yes" class="w-full font-semibold py-3 px-4 shadow btn-cta">Yes, I'd be happy to</button>
+                            <button data-answer="s4_continue_no" class="w-full font-semibold py-3 px-4 shadow bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-lg">No, maybe next time</button>
+                        </div>
+                    </div>
+                </div>
+
 
                 <div id="question-container-q3" class="question-container q-hidden fade-in">
                      <p class="question-title text-lg font-semibold mb-4 text-center"></p>
@@ -323,6 +350,7 @@
         // --- Configuration ---
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0BWDCQhcF97ScCneBY8XzqhPR61LvFT9Ggzvo99549OKlAPc9t8QJG10WBvmMt8S9aA/exec';
         const QUESTIONS_CONFIG = {
+            'q-uses-sap': "Is your company currently using SAP?",
             'q1': "Which SAP ERP system is your company currently using?",
             'q3': "Where is your SAP currently deployed?",
             'q4': "Please rank your top business challenges in managing your SAP.",
@@ -330,7 +358,7 @@
             'q6': "Are you using any public cloud today?",
             'q8': "Are you planning any cloud migration or adoption in the near future?",
             'q9': "What is your estimated timeline?",
-            'q7': "What workloads are currently running on your cloud?"
+            'q7': "What workloads are currently running on your cloud?" // This will be dynamically updated
         };
         const WORKLOADS_CONFIG = [
             { id: 'websites', category: 'Websites & Web Apps', subOptions: ['Customer-facing sites', 'Portals', 'E-commerce platforms', 'Internal applications'] },
@@ -343,7 +371,6 @@
         // --- State ---
         let userAnswers = {};
         let history = ['q0'];
-        let questionNumber = 1;
 
         // --- DOM Elements ---
         const dom = {
@@ -377,11 +404,13 @@
             const finalQuizData = {
                 timestamp: new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' }),
                 companyName: userAnswers.companyName || '',
+                'Uses SAP': userAnswers.usesSAP || '',
                 qualified: userAnswers.qualified || '',
                 sapVersion: userAnswers.sapVersion || '',
                 hosting: userAnswers.hosting || '',
                 rankedChallenges: userAnswers.rankedChallenges || '',
                 cloudProvider: userAnswers.cloudProvider || '',
+                'S4HANA Opt-in': userAnswers.s4hanaOptIn || '',
                 s4_cloudProviders: userAnswers.s4_cloudProviders || '',
                 s4_otherProvider: userAnswers.s4_otherProvider || '',
                 s4_migrationPlans: userAnswers.s4_migrationPlans || '',
@@ -399,25 +428,35 @@
                 .catch(error => console.error('Fetch Error!', error));
         };
 
-        const updateQuestionTitle = (qId) => {
-            const container = document.getElementById(`question-container-${qId}`);
-            if (!container) return;
-            const titleEl = container.querySelector('.question-title');
-            if (titleEl && QUESTIONS_CONFIG[qId]) {
-                 titleEl.textContent = `${questionNumber}. ${QUESTIONS_CONFIG[qId]}`;
+        const calculateQuestionNumber = () => {
+            let questionCount = 0;
+            // Iterate through the user's path to count how many actual questions they've seen
+            for (const qId of history) {
+                const container = document.getElementById(`question-container-${qId}`);
+                // A screen is considered a "question" if it has a title element to be numbered
+                if (container && container.querySelector('.question-title')) {
+                    questionCount++;
+                }
             }
+            return questionCount;
         };
 
         const showQuestion = (id, forward = true) => {
             if (forward) {
                 if(history[history.length - 1] !== id) history.push(id);
-                questionNumber++;
             }
             dom.questionContainers.forEach(q => q.classList.add('q-hidden'));
-            const container = document.getElementById(`question-container-${id}`);
-            if (container) {
-                container.classList.remove('q-hidden');
-                updateQuestionTitle(id);
+            const containerToShow = document.getElementById(`question-container-${id}`);
+            if (containerToShow) {
+                containerToShow.classList.remove('q-hidden');
+                
+                if (containerToShow.querySelector('.question-title')) {
+                    const currentQuestionNumber = calculateQuestionNumber();
+                    const titleEl = containerToShow.querySelector('.question-title');
+                    if (titleEl && QUESTIONS_CONFIG[id]) {
+                        titleEl.textContent = `${currentQuestionNumber}. ${QUESTIONS_CONFIG[id]}`;
+                    }
+                }
             }
             dom.backButton.classList.toggle('q-hidden', history.length <= 1);
         };
@@ -428,10 +467,11 @@
                     dom.resultSection.classList.add('q-hidden');
                     dom.quizSection.classList.remove('q-hidden');
                     dom.headerContent.classList.remove('q-hidden');
-                    dom.introText.classList.remove('q-hidden');
+                    if (userAnswers.sapVersion !== 'S/4HANA') {
+                        dom.introText.classList.remove('q-hidden');
+                    }
                 }
                 history.pop();
-                questionNumber--;
                 showQuestion(history[history.length - 1], false); 
             }
         };
@@ -440,14 +480,22 @@
             userAnswers = { companyName: dom.companyNameInput.value.trim() };
             if (userAnswers.companyName) {
                 dom.introText.classList.remove('q-hidden');
-                showQuestion('q1');
+                showQuestion('q-uses-sap');
             }
         };
 
         const handleAnswer = (answer) => {
             const actions = {
+                'uses_sap_yes': () => { userAnswers.usesSAP = 'Yes'; showQuestion('q1'); },
+                'uses_sap_no': () => { userAnswers.usesSAP = 'No'; showResult('final_thank_you'); },
                 'b1_or_ecc': () => { userAnswers.sapVersion = 'B1 or ECC'; showQuestion('q3'); },
-                's4hana': () => { userAnswers.sapVersion = 'S/4HANA'; showQuestion('q6'); },
+                's4hana': () => { 
+                    userAnswers.sapVersion = 'S/4HANA'; 
+                    dom.introText.classList.add('q-hidden');
+                    showQuestion('s4hana-prequal'); 
+                },
+                's4_continue_yes': () => { userAnswers.s4hanaOptIn = 'Yes'; showQuestion('q6'); },
+                's4_continue_no': () => { userAnswers.s4hanaOptIn = 'No'; showResult('final_thank_you'); },
                 'on_premise': () => { userAnswers.hosting = 'On-Premise'; showQuestion('q4'); },
                 'on_cloud': () => { userAnswers.hosting = 'Cloud'; showQuestion('q4'); },
                 'next': () => {
@@ -460,9 +508,9 @@
                 'provider_other': () => { userAnswers.cloudProvider = 'Other'; showResult('qualified_cloud'); },
                 'migration_yes': () => { userAnswers.s4_migrationPlans = 'Yes'; showQuestion('q9'); },
                 'migration_no': () => { userAnswers.s4_migrationPlans = 'No'; showResult('unqualified'); },
-                'timeline_3m': () => { userAnswers.s4_migrationTimeline = '3 Months'; dom.workloadTitle.textContent = `${questionNumber + 1}. Which workload/s are you planning to migrate or use cloud for?`; showQuestion('q7'); },
-                'timeline_6m': () => { userAnswers.s4_migrationTimeline = '6 Months'; dom.workloadTitle.textContent = `${questionNumber + 1}. Which workload/s are you planning to migrate or use cloud for?`; showQuestion('q7'); },
-                'timeline_12m': () => { userAnswers.s4_migrationTimeline = '12 Months'; dom.workloadTitle.textContent = `${questionNumber + 1}. Which workload/s are you planning to migrate or use cloud for?`; showQuestion('q7'); }
+                'timeline_3m': () => { userAnswers.s4_migrationTimeline = '3 Months'; QUESTIONS_CONFIG['q7'] = "Which workload/s are you planning to migrate or use cloud for?"; showQuestion('q7'); },
+                'timeline_6m': () => { userAnswers.s4_migrationTimeline = '6 Months'; QUESTIONS_CONFIG['q7'] = "Which workload/s are you planning to migrate or use cloud for?"; showQuestion('q7'); },
+                'timeline_12m': () => { userAnswers.s4_migrationTimeline = '12 Months'; QUESTIONS_CONFIG['q7'] = "Which workload/s are you planning to migrate or use cloud for?"; showQuestion('q7'); }
             };
             if (actions[answer]) actions[answer]();
         };
@@ -474,7 +522,7 @@
             if (userAnswers.s4_cloudProviders === 'No') {
                 showQuestion('q8');
             } else {
-                dom.workloadTitle.textContent = `${questionNumber + 1}. What workloads are currently running on your cloud?`;
+                QUESTIONS_CONFIG['q7'] = "What workloads are currently running on your cloud?";
                 showQuestion('q7');
             }
         };
@@ -513,6 +561,13 @@
             } else if (type === 'unqualified') {
                 userAnswers.qualified = 'No (S/4HANA)';
                 dom.unqualifiedResult.classList.remove('q-hidden');
+                 gatherAndSaveData('Shown S4 Interests');
+            } else if (type === 'final_thank_you') {
+                if (!userAnswers.qualified) {
+                    userAnswers.qualified = userAnswers.usesSAP === 'No' ? 'No (Not SAP User)' : 'No (S4HANA Opt-out)';
+                }
+                dom.finalThankYou.classList.remove('q-hidden');
+                gatherAndSaveData(userAnswers.s4hanaOptIn === 'No' ? 'S4 Opt-out' : 'Not SAP User');
             }
         };
         
@@ -532,10 +587,9 @@
         const resetQuiz = () => {
             userAnswers = {}; 
             history = ['q0'];
-            questionNumber = 1;
             dom.resultSection.classList.add('q-hidden'); dom.finalThankYou.classList.add('q-hidden');
             dom.headerContent.classList.remove('q-hidden'); 
-            dom.introText.classList.add('q-hidden');
+            dom.introText.classList.remove('q-hidden');
             dom.quizSection.classList.remove('q-hidden');
             document.querySelectorAll('input[type="text"]').forEach(i => i.value = '');
             dom.startBtn.disabled = true;
@@ -585,8 +639,10 @@
             document.getElementById('capture-no-thanks-btn').addEventListener('click', () => captureInterests('no_thanks'));
 
             dom.quizSection.addEventListener('click', (e) => {
-                const answer = e.target.dataset.answer;
-                if (answer) handleAnswer(answer);
+                const button = e.target.closest('button');
+                if (button && button.dataset.answer) {
+                     handleAnswer(button.dataset.answer);
+                }
             });
 
             dom.providerContinueBtn.addEventListener('click', handleProviderSelection);
@@ -681,5 +737,3 @@
     </script>
 </body>
 </html>
-
-
