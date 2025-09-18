@@ -348,7 +348,7 @@
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         // --- Configuration ---
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0BWDCQhcF97ScCneBY8XzqhPR61LvFT9Ggzvo99549OKlAPc9t8QJG10WBvmMt8S9aA/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyip5YvLrHeHM4oMBcg3P3litkxJGK0KqBxCX8U7Sh38JNDjSXS2H93zTSSJ2PTbfYtUw/exec';
         const QUESTIONS_CONFIG = {
             'q-uses-sap': "Is your company currently using SAP?",
             'q1': "Which SAP ERP system is your company currently using?",
@@ -400,22 +400,37 @@
         };
         
         // --- Functions ---
-        const gatherAndSaveData = (action) => {
+        const gatherAndSaveData = (action, buttonElement = null) => {
+            // FIX 3: Add loading state to the button to prevent double clicks.
+            let originalButtonText = '';
+            if (buttonElement) {
+                originalButtonText = buttonElement.innerHTML;
+                buttonElement.disabled = true;
+                buttonElement.innerHTML = `<span class="inline-flex items-center justify-center">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Submitting...
+                </span>`;
+            }
+
+            // FIX 2: Standardize data keys to camelCase for better compatibility with Google Sheets.
             const finalQuizData = {
                 timestamp: new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' }),
                 companyName: userAnswers.companyName || '',
-                'Uses SAP': userAnswers.usesSAP || '',
+                usesSAP: userAnswers.usesSAP || '',
                 qualified: userAnswers.qualified || '',
                 sapVersion: userAnswers.sapVersion || '',
                 hosting: userAnswers.hosting || '',
                 rankedChallenges: userAnswers.rankedChallenges || '',
                 cloudProvider: userAnswers.cloudProvider || '',
-                'S4HANA Opt-in': userAnswers.s4hanaOptIn || '',
-                s4_cloudProviders: userAnswers.s4_cloudProviders || '',
-                s4_otherProvider: userAnswers.s4_otherProvider || '',
-                s4_migrationPlans: userAnswers.s4_migrationPlans || '',
-                s4_migrationTimeline: userAnswers.s4_migrationTimeline || '',
-                s4_workloadDetails: userAnswers.s4_workloadDetails || '',
+                s4hanaOptIn: userAnswers.s4hanaOptIn || '',
+                s4CloudProviders: userAnswers.s4_cloudProviders || '',
+                s4OtherProvider: userAnswers.s4_otherProvider || '',
+                s4MigrationPlans: userAnswers.s4_migrationPlans || '',
+                s4MigrationTimeline: userAnswers.s4_migrationTimeline || '',
+                s4WorkloadDetails: userAnswers.s4_workloadDetails || '',
                 s4hanaInterests: Array.from(dom.interestsSection.querySelectorAll('input:checked')).map(cb => cb.value).join('; ') || '',
                 actionTaken: action || ''
             };
@@ -425,15 +440,20 @@
             
             fetch(SCRIPT_URL, { method: 'POST', body: formData})
                 .then(res => res.json()).then(data => console.log(data.result === 'success' ? 'Success!' : 'Error:', data))
-                .catch(error => console.error('Fetch Error!', error));
+                .catch(error => console.error('Fetch Error!', error))
+                .finally(() => {
+                    // Restore button state after submission attempt
+                    if (buttonElement) {
+                        buttonElement.disabled = false;
+                        buttonElement.innerHTML = originalButtonText;
+                    }
+                });
         };
 
         const calculateQuestionNumber = () => {
             let questionCount = 0;
-            // Iterate through the user's path to count how many actual questions they've seen
             for (const qId of history) {
                 const container = document.getElementById(`question-container-${qId}`);
-                // A screen is considered a "question" if it has a title element to be numbered
                 if (container && container.querySelector('.question-title')) {
                     questionCount++;
                 }
@@ -561,7 +581,8 @@
             } else if (type === 'unqualified') {
                 userAnswers.qualified = 'No (S/4HANA)';
                 dom.unqualifiedResult.classList.remove('q-hidden');
-                 gatherAndSaveData('Shown S4 Interests');
+                // FIX 1: Removed the premature data submission from here to prevent double-logging.
+                // The data will now only be sent once the user clicks a final action button.
             } else if (type === 'final_thank_you') {
                 if (!userAnswers.qualified) {
                     userAnswers.qualified = userAnswers.usesSAP === 'No' ? 'No (Not SAP User)' : 'No (S4HANA Opt-out)';
@@ -571,7 +592,7 @@
             }
         };
         
-        const captureInterests = (action) => {
+        const captureInterests = (action, buttonElement) => {
             dom.unqualifiedResult.classList.add('q-hidden');
             dom.finalThankYou.classList.remove('q-hidden');
             
@@ -581,7 +602,8 @@
             document.querySelectorAll('.company-name-placeholder').forEach(el => {
                 el.textContent = userAnswers.companyName || '';
             });
-            gatherAndSaveData(action);
+            // This is now the single point of submission for the S/4HANA 'unqualified' path.
+            gatherAndSaveData(action, buttonElement);
         };
 
         const resetQuiz = () => {
@@ -589,9 +611,10 @@
             history = ['q0'];
             dom.resultSection.classList.add('q-hidden'); dom.finalThankYou.classList.add('q-hidden');
             dom.headerContent.classList.remove('q-hidden'); 
-            dom.introText.classList.remove('q-hidden');
+            dom.introText.classList.add('q-hidden'); // This was missing, added for complete reset.
             dom.quizSection.classList.remove('q-hidden');
             document.querySelectorAll('input[type="text"]').forEach(i => i.value = '');
+            dom.companyNameInput.value = ''; // Explicitly clear company name
             dom.startBtn.disabled = true;
             document.querySelectorAll('.btn-provider.selected, .btn-primary.selected').forEach(b => b.classList.remove('selected'));
             document.querySelectorAll('.sub-option-container').forEach(c => c.classList.add('q-hidden'));
@@ -635,8 +658,9 @@
             dom.unqualifiedBackButton.addEventListener('click', goBack);
             document.querySelectorAll('.reset-quiz-btn').forEach(btn => btn.addEventListener('click', resetQuiz));
             
-            document.getElementById('capture-contact-btn').addEventListener('click', () => captureInterests('contact_rm'));
-            document.getElementById('capture-no-thanks-btn').addEventListener('click', () => captureInterests('no_thanks'));
+            // Pass the clicked button element to the capture function for UI feedback
+            document.getElementById('capture-contact-btn').addEventListener('click', (e) => captureInterests('contact_rm', e.currentTarget));
+            document.getElementById('capture-no-thanks-btn').addEventListener('click', (e) => captureInterests('no_thanks', e.currentTarget));
 
             dom.quizSection.addEventListener('click', (e) => {
                 const button = e.target.closest('button');
@@ -737,3 +761,4 @@
     </script>
 </body>
 </html>
+
